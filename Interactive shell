@@ -1,0 +1,12 @@
+ python -c 'import pty;pty.spawn("/bin/bash")'
+some targets may need the version of Python specified. If this is the case, replace python with python2 or python3 as required. At this point our shell will look a bit prettier, but we still won't be able to use tab autocomplete or the arrow keys, and Ctrl + C will still kill the shell.
+Step two is: export TERM=xterm 
+-- this will give us access to term commands such as clear.
+Finally (and most importantly) we will background the shell using Ctrl + Z. Back in our own terminal we use 
+stty raw -echo; 
+fg. 
+
+This gives good control 
+
+Note that if the shell dies, any input in your own terminal will not be visible (as a result of having disabled terminal echo). To fix this, type reset and press enter.
+
